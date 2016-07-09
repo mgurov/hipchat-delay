@@ -12,19 +12,22 @@ type Message struct {
 	Room        string
 	AuthToken   string
 	NeedSilence time.Duration
+	On          time.Time
 }
 
 func (c Message) Send() error {
-	sender := sender{c, hipchat.NewClient(c.AuthToken)}
+	sender := sender{c, hipchat.NewClient(c.AuthToken), time.Now()}
 	return sender.send()
 }
 
 type sender struct {
 	Message
-	cli     *hipchat.Client
+	cli *hipchat.Client
+	now time.Time
 }
 
 func (s sender) send() error {
+	s.waitForTheFuture()
 	err := s.waitForSilence()
 	if nil != err {
 		return errors.Wrap(err, "While waiting for silence")
@@ -38,7 +41,11 @@ func (s sender) waitForSilence() error {
 		return nil
 	}
 	log.Println("Need silence at least", s.NeedSilence)
-	time.Sleep(s.NeedSilence)
+
+	// check the time passed since start and wait for the silence interval
+	// otherwise little point in checking last timestamps yet
+	// except for the unlikely case of empty chat history, where silence request would not make much sense in the first place
+	time.Sleep(s.now.Add(s.NeedSilence).Sub(time.Now()))
 
 	for {
 		durationSinceLastMessage, err := s.readDurationSinceLastMessage()
@@ -76,4 +83,12 @@ func (s sender) readDurationSinceLastMessage() (time.Duration, error) {
 		return 0, errors.Wrap(err, "Parsing message date: " + lastMessageDate)
 	}
 	return time.Now().Sub(lastMessageTimestamp), nil
+}
+
+func (s sender) waitForTheFuture() {
+	howLongToWait := s.On.Sub(s.now)
+	if (howLongToWait > 0) {
+		log.Println("Will wait", howLongToWait, "till", s.On)
+		time.Sleep(howLongToWait)
+	}
 }
