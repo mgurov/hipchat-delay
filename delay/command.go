@@ -32,7 +32,7 @@ func (s sender) send() error {
 	if nil != err {
 		return errors.Wrap(err, "While waiting for silence")
 	}
-	_, err = s.cli.Room.Message(s.Room, &hipchat.RoomMessageRequest{Message: s.Message.Text})
+	_, err = s.cli.Room.Message(s.Room, &hipchat.RoomMessageRequest{Message: s.Text})
 	return errors.Wrap(err, "Could not send message")
 }
 
