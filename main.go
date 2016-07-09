@@ -7,6 +7,7 @@ import (
 	"flag"
 	"log"
 	"github.com/mgurov/hipchat-delay/delay"
+	"time"
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
 
 	flag.StringVar(&command.AuthToken, "auth", "", "https://developer.atlassian.com/hipchat/guide/hipchat-rest-api/api-access-tokens#APIaccesstokens-userUsertoken")
 	flag.StringVar(&command.Room, "room", "", "room id or name")
-	flag.DurationVar(&command.NeedSilence, "after-silence", 0, "Don't post until the silence of the duration")
+	flag.DurationVar(&command.NeedSilence, "after-silence", 1 * time.Minute, "Don't post until the silence of the duration")
 
 	flag.Parse()
 
