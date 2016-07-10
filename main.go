@@ -19,9 +19,11 @@ func main() {
 
 	flag.StringVar(&command.AuthToken, "auth", "", "https://developer.atlassian.com/hipchat/guide/hipchat-rest-api/api-access-tokens#APIaccesstokens-userUsertoken")
 	flag.StringVar(&command.Room, "room", "", "room id or name")
-	flag.DurationVar(&command.NeedSilence, "after-silence", 1 * time.Minute, "Don't post until the silence of the duration")
-	on := "now"
-	flag.StringVar(&on, "on", on, "when to post the message, HH:MM or duration")
+	flag.DurationVar(&command.NeedSilence, "silence", 1 * time.Minute, "Don't post until the silence of the duration")
+	at := ""
+	flag.StringVar(&at, "at", at, "when to post the message, HH:MM.")
+	var in time.Duration = 0
+	flag.DurationVar(&in, "in", in, "when to post the message, duration e.g. 5m")
 
 	flag.Parse()
 
@@ -35,20 +37,24 @@ func main() {
 		return
 	}
 
-	if "" == on || "now" == on {
-		command.On = time.Now()
-	} else {
-		command.On, err = time.Parse("15:04", on)
+	now := time.Now()
+	if "" != at && 0 != in {
+		log.Fatal("Either -on or -in should be specified, not both of them")
+		return
+	} else if "" != at {
+		command.On, err = time.Parse("15:04", at)
 		if err != nil {
-			offset, err := time.ParseDuration(on)
-			if err != nil {
-				log.Fatal("Could not parse 'on': ", on, " expected HH:SS or duration: 5m3s etc.")
-				return
-			}
-			command.On = time.Now().Add(offset)
-		} else {
-			command.On = util.MergeDateTime(time.Now(), command.On)
+			log.Fatal("Could not parse 'on': ", at, " expected HH:SS")
+			return
 		}
+		command.On = util.MergeDateTime(now, command.On)
+		if now.After(command.On) {
+			command.On = command.On.AddDate(0, 0, 1)
+		}
+	} else if 0 != in {
+		command.On = now.Add(in)
+	} else {
+		command.On = now
 	}
 
 	message, err := ioutil.ReadAll(os.Stdin)
