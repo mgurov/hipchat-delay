@@ -14,6 +14,10 @@ NB: if the time has already passed, next day will be used. E.g. `-at 01:00` on 1
  
 Will prevent your post to appear in the middle of a lively discussion other topic.
 
+### `-m=message`
+
+or stream from stdin
+
 # Installation 
 
 `go get github.com/mgurov/hipchat-delay`

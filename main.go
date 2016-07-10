@@ -21,6 +21,7 @@ func main() {
 
 	flag.StringVar(&command.AuthToken, "auth", "", "https://developer.atlassian.com/hipchat/guide/hipchat-rest-api/api-access-tokens#APIaccesstokens-userUsertoken")
 	flag.StringVar(&command.Room, "room", "", "room id or name")
+	flag.StringVar(&command.Text, "m", "", "text to post. Leave empty to stream from stdin")
 	flag.DurationVar(&command.NeedSilence, "silence", command.NeedSilence, "Don't post until the silence of the duration")
 	at := ""
 	flag.StringVar(&at, "at", at, "when to post the message, HH:MM.")
@@ -61,12 +62,13 @@ func main() {
 		command.On = now
 	}
 
-	message, err := ioutil.ReadAll(os.Stdin)
-	if (err != nil) {
-		log.Fatal(errors.Wrap(err, "reading stdin failed"))
+	if "" == command.Text {
+		message, err := ioutil.ReadAll(os.Stdin)
+		if (err != nil) {
+			log.Fatal(errors.Wrap(err, "reading stdin failed"))
+		}
+		command.Text = string(message)
 	}
-
-	command.Text = string(message)
 
 	err = command.Send()
 	if err != nil {
