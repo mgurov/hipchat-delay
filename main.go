@@ -15,11 +15,13 @@ func main() {
 
 	var err error
 
-	command := delay.Message{}
+	command := delay.Message{
+		NeedSilence: 1 * time.Minute,
+	}
 
 	flag.StringVar(&command.AuthToken, "auth", "", "https://developer.atlassian.com/hipchat/guide/hipchat-rest-api/api-access-tokens#APIaccesstokens-userUsertoken")
 	flag.StringVar(&command.Room, "room", "", "room id or name")
-	flag.DurationVar(&command.NeedSilence, "silence", 1 * time.Minute, "Don't post until the silence of the duration")
+	flag.DurationVar(&command.NeedSilence, "silence", command.NeedSilence, "Don't post until the silence of the duration")
 	at := ""
 	flag.StringVar(&at, "at", at, "when to post the message, HH:MM.")
 	var in time.Duration = 0
@@ -32,9 +34,11 @@ func main() {
 	}
 
 	if "" == command.AuthToken {
-		flag.PrintDefaults()
-		log.Fatal("Need authentication token")
-		return
+		if command.AuthToken = os.Getenv("HIPCHAT_AUTH_TOKEN"); "" == command.AuthToken {
+			flag.PrintDefaults()
+			log.Fatal("Need authentication token")
+			return
+		}
 	}
 
 	now := time.Now()

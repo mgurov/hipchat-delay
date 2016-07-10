@@ -17,3 +17,10 @@ Will prevent your post to appear in the middle of a lively discussion other topi
 # Installation 
 
 `go get github.com/mgurov/hipchat-delay`
+
+# Configuration
+
+### HIPCHAT_AUTH_TOKEN
+
+A HipChat API token with message posting and reading (for silence period) rights is needed. 
+Pass it via environmental variable `HIPCHAT_AUTH_TOKEN` or `--auth` command line flag.    
